@@ -1835,8 +1835,25 @@ pub extern "system" fn Java_com_winlator_cmod_feature_stores_steam_wnsteam_WnSte
     // logon fail in a loop even though another entry in the same response was
     // reachable.
     let servers = if result.ok() {
+        crate::depot_downloader::log_line(&format!(
+            "CM directory: {} websocket CMs (http {})",
+            result.servers.len(),
+            result.http_status
+        ));
         result.servers.clone()
     } else {
+        // Log why the directory was unusable: without this the client silently
+        // falls back to the built-in list and logon failures look inexplicable.
+        crate::depot_downloader::log_line(&format!(
+            "CM directory failed (http {}): {}; using {} built-in CMs",
+            result.http_status,
+            if result.error.is_empty() {
+                "no servers"
+            } else {
+                result.error.as_str()
+            },
+            crate::cm_server_list::hardcoded_fallback_servers().len()
+        ));
         crate::cm_server_list::hardcoded_fallback_servers()
     };
     let candidates = crate::cm_selector::candidates_for(&servers);
