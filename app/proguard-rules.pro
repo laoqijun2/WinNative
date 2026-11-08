@@ -138,3 +138,10 @@
 -keep class com.winnative.** { *; }
 -keep class org.love2d.** { *; }
 
+
+# androidx.security.crypto builds its keys through Tink, which registers
+# algorithm implementations reflectively. Without these keeps, release builds
+# lose them and EncryptedSharedPreferences.create() throws at runtime.
+-keep class androidx.security.crypto.** { *; }
+-keep class com.google.crypto.tink.** { *; }
+-dontwarn com.google.crypto.tink.**
